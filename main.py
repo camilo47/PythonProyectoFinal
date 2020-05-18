@@ -12,17 +12,21 @@ nameCompanys = []
 
 #leer  archivo
 def readFileIN(fileIN):
-    file = open(fileIN, 'r')
-    count = 0
-    for line in file.readlines():
-        if count > 0 :
-            line = line.rstrip('\n')
-            tmpSplit = line.split('#')
-            tmpSplit[2] = tmpSplit[2].split(',')
-            dataIN.append(tmpSplit)
-        count += 1
-    print("lineas leidas " + str(count))
-    file.close()
+    try:
+        file = open(fileIN, 'r')
+        count = 0
+        for line in file.readlines():
+            if count > 0 :
+                line = line.rstrip('\n')
+                tmpSplit = line.split('#')
+                tmpSplit[2] = tmpSplit[2].split(',')
+                dataIN.append(tmpSplit)
+            count += 1
+        print("lineas leidas " + str(count))
+    except:
+        print("Error leyendo el archivo, valide que exista  y qu no contiene caracteres como tildes o ñ")
+    finally:
+        file.close()
 
 def loadDays():
     tmp_range = range(1,32)
@@ -84,18 +88,44 @@ def createDataFrame2(dataCompany):
                dataFrame[MONTHS[x]][DAYS[y]] = dataCompany['Porcentaje'][x]
            elif (math.isnan(dataFrame[MONTHS[x]][DAYS[y]])):
                dataFrame[MONTHS[x]][DAYS[y]] = 0
-    print(dataFrame.sum(axis=1))
+    
+    dataFrame['suma filas'] = dataFrame.sum(axis=1)
+    #tmp_row_sum = pd.Series(dataFrame.sum(axis=0), name = 'Total X ') 
+    #print(tmp_row_sum)
+    #dataFrame.append(tmp_row_sum, ignore_index = False)
+    print(dataFrame)
     print(dataCompany)
+    
+def createDataFrame3(data_frame_All):
+    columnsDF = ['Mes', 'Dia', 'Frecuencia','Rango Probabilidad', 'Porcentaje' ]
+    dataFrame3 = pd.DataFrame(columns =  columnsDF)
+    tmp_columns = data_frame_All.columns
+    tmp_index = 0
+    for x in range(len(MONTHS)):
+        for y in range(len(data_frame_All.columns)):
+            tmp_serie = pd.Series([MONTHS[x], data_frame_All[tmp_columns[y]][MONTHS[x]], 1, 0, 0])
+            dataFrame3.loc[tmp_index] = tmp_serie
+            dataFrame3.loc[tmp_index]['Mes'] = MONTHS[x]
+            dataFrame3.loc[tmp_index]['Dia'] = data_frame_All[tmp_columns[y]][MONTHS[x]]
+            dataFrame3.loc[tmp_index]['Frecuencia'] = 1
+            dataFrame3.loc[tmp_index]['Rango Probabilidad'] = 0
+            dataFrame3.loc[tmp_index]['Porcentaje'] = 0
+            tmp_index += 1
+    print(dataFrame3)
+
+def createDateFrame4():
+    pass
 
 def workCompany():
-    tmp_datacompany = pd.Series(filterDataCompany(nameCompanys[1]))
+    tmp_datacompany = pd.Series(filterDataCompany(nameCompanys[0]))
     returnDataFrame1, data_frameAll  = createDataFrame1(tmp_datacompany)
     
     returnDataFrame1 = possibilityAndPercent(returnDataFrame1)
-    print(returnDataFrame1)
-    print(data_frameAll)
+    #print(returnDataFrame1)
+    #print(data_frameAll)
     
     createDataFrame2(returnDataFrame1)
+    createDataFrame3(data_frameAll)
 
 #generar pdf
 
