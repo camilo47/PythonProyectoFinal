@@ -134,12 +134,15 @@ def createDataFrame3(data_frame_All):
 
 def createDateFrame4(dataFrame3):
     dataFrame4 = pd.DataFrame({}, columns = MONTHS , index = DAYS)
-    for x in range(len(MONTHS)):
-        for y in range(len(DAYS)):
-            if (dataFrame4[MONTHS[x]].name == dataFrame3['Mes'][x]) and (int(dataFrame3['Dia'][x]) == int(dataFrame3.index.values[y])):
-               dataFrame4[MONTHS[x]][DAYS[y]] = dataFrame3['Porcentaje'][x]
-            elif (math.isnan(dataFrame4[MONTHS[x]][DAYS[y]])):
-               dataFrame4[MONTHS[x]][DAYS[y]] = 0
+    for x in range(len(dataFrame3)):
+        for y in range(len(MONTHS)):
+            for z in range(len(DAYS)):
+                if (dataFrame4[MONTHS[y]].name == dataFrame3['Mes'][x]) and (int(dataFrame3['Dia'][x]) == int(dataFrame4.index.values[z])):
+                    dataFrame4[MONTHS[y]][DAYS[z]] = dataFrame3['Porcentaje'][x]
+                    
+                elif (math.isnan(dataFrame4[MONTHS[y]][DAYS[z]])):
+                    dataFrame4[MONTHS[y]][DAYS[z]] = 0
+                                
     print(dataFrame4)
 
 def workCompany():
@@ -153,6 +156,8 @@ def workCompany():
     createDateFrame4(dataFrame3)
 
 #generar pdf
+def printPDF():
+    pass
 
 if __name__ == '__main__':
     pd.set_option('display.max_columns', None)
