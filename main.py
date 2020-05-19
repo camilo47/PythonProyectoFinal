@@ -95,6 +95,14 @@ def createDataFrame2(dataCompany):
     #dataFrame.append(tmp_row_sum, ignore_index = False)
     print(dataFrame)
     print(dataCompany)
+
+def findDay(dataFrame3, tmp_index, month, day):
+    tmp_return = False
+    for s in range(tmp_index):
+        if(dataFrame3['Mes'][s] == month and dataFrame3['Dia'][s] == day ):
+            dataFrame3.loc[s]['Frecuencia'] += 1
+            tmp_return =  True
+    return tmp_return
     
 def createDataFrame3(data_frame_All):
     columnsDF = ['Mes', 'Dia', 'Frecuencia','Rango Probabilidad', 'Porcentaje' ]
@@ -104,32 +112,52 @@ def createDataFrame3(data_frame_All):
     for x in range(len(MONTHS)):
         for y in range(len(data_frame_All.columns)):
             tmp_serie = pd.Series([MONTHS[x], data_frame_All[tmp_columns[y]][MONTHS[x]], 1, 0, 0])
-            dataFrame3.loc[tmp_index] = tmp_serie
-            dataFrame3.loc[tmp_index]['Mes'] = MONTHS[x]
-            dataFrame3.loc[tmp_index]['Dia'] = data_frame_All[tmp_columns[y]][MONTHS[x]]
-            dataFrame3.loc[tmp_index]['Frecuencia'] = 1
-            dataFrame3.loc[tmp_index]['Rango Probabilidad'] = 0
-            dataFrame3.loc[tmp_index]['Porcentaje'] = 0
-            tmp_index += 1
-    print(dataFrame3)
+            #print(dataFrame3.query('Mes =="'+ MONTHS[x] +'" and  Dia =='+ data_frame_All[tmp_columns[y]][MONTHS[x]] ))
+            if(findDay(dataFrame3, tmp_index, MONTHS[x], data_frame_All[tmp_columns[y]][MONTHS[x]]) == False):
+                dataFrame3.loc[tmp_index] = tmp_serie
+                dataFrame3.loc[tmp_index]['Mes'] = MONTHS[x]
+                dataFrame3.loc[tmp_index]['Dia'] = data_frame_All[tmp_columns[y]][MONTHS[x]]
+                dataFrame3.loc[tmp_index]['Frecuencia'] = 1
+                dataFrame3.loc[tmp_index]['Rango Probabilidad'] = 0
+                dataFrame3.loc[tmp_index]['Porcentaje'] = 0
+                tmp_index += 1
+    
+    tmp_frecuencia = dataFrame3['Frecuencia'].sum()
+    tmp_index = 0
+    for rango in dataFrame3['Frecuencia']:
+        dataFrame3.loc[tmp_index]['Rango Probabilidad'] = (rango/tmp_frecuencia)
+        dataFrame3.loc[tmp_index]['Porcentaje'] = ((rango/tmp_frecuencia)*100)
+        tmp_index += 1
 
-def createDateFrame4():
-    pass
+    print(dataFrame3)
+    return dataFrame3
+
+def createDateFrame4(dataFrame3):
+    dataFrame4 = pd.DataFrame({}, columns = MONTHS , index = DAYS)
+    for x in range(len(MONTHS)):
+        for y in range(len(DAYS)):
+            if (dataFrame4[MONTHS[x]].name == dataFrame3['Mes'][x]) and (int(dataFrame3['Dia'][x]) == int(dataFrame3.index.values[y])):
+               dataFrame4[MONTHS[x]][DAYS[y]] = dataFrame3['Porcentaje'][x]
+            elif (math.isnan(dataFrame4[MONTHS[x]][DAYS[y]])):
+               dataFrame4[MONTHS[x]][DAYS[y]] = 0
+    print(dataFrame4)
 
 def workCompany():
     tmp_datacompany = pd.Series(filterDataCompany(nameCompanys[0]))
     returnDataFrame1, data_frameAll  = createDataFrame1(tmp_datacompany)
     
     returnDataFrame1 = possibilityAndPercent(returnDataFrame1)
-    #print(returnDataFrame1)
-    #print(data_frameAll)
-    
+
     createDataFrame2(returnDataFrame1)
-    createDataFrame3(data_frameAll)
+    dataFrame3 = createDataFrame3(data_frameAll)
+    createDateFrame4(dataFrame3)
 
 #generar pdf
 
 if __name__ == '__main__':
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.max_rows', None) 
+    
     readFileIN("input.txt")
     #print(dataIN)
     serieAll = pd.Series(dataIN)
