@@ -40,6 +40,7 @@ def readFileIN(fileIN):
 Función generica  que permite cargar valores de 1 a 31 para simular los dias calendario
 '''
 def loadDays():
+    
     tmp_range = range(1,32)
     for x in tmp_range:
         DAYS.append(x)      
@@ -105,16 +106,12 @@ def possibilityAndPercent(dataFrame):
 Función que  crea dataframe para mostra igual que la tabla 2 
 recibe todos los datos de la compañia
 '''
-def createDataFrame2(dataCompany):
-    loadDays()
-    dataFrame =''
-    dataFrame = pd.DataFrame({}, columns = MONTHS , index = DAYS)
+def createDataFrame2(dataCompany):   
+    dataFrame = pd.DataFrame(0.0, columns = MONTHS , index = DAYS)
     for x in range(len(MONTHS)):
         for y in range(len(DAYS)):
            if (dataFrame[MONTHS[x]].name == dataCompany.index.values[x]) and (int(dataCompany['2015'][x]) == int(dataFrame.index.values[y])):
                dataFrame[MONTHS[x]][DAYS[y]] = dataCompany['Porcentaje'][x]
-           elif (math.isnan(dataFrame[MONTHS[x]][DAYS[y]])):
-               dataFrame[MONTHS[x]][DAYS[y]] = 0
     
     dataFrame['suma filas'] = dataFrame.sum(axis=1)
     #tmp_row_sum = pd.Series(dataFrame.sum(axis=0), name = 'Total X ') 
@@ -172,14 +169,13 @@ Función que  crea dataframe para mostra igual que la tabla 4
 recibe todos los datos de la compañia
 '''
 def createDateFrame4(dataFrame3):
-    dataFrame4 = pd.DataFrame({}, columns = MONTHS , index = DAYS)
+    dataFrame4 = pd.DataFrame(0.0, columns = MONTHS , index = DAYS)
     for x in range(len(dataFrame3)):
         for y in range(len(MONTHS)):
             for z in range(len(DAYS)):
                     if (dataFrame4[MONTHS[y]].name == dataFrame3['Mes'][x]) and (int(dataFrame3['Dia'][x]) == int(dataFrame4.index.values[z])):
-                        dataFrame4[MONTHS[y]][DAYS[z]] = dataFrame3['Porcentaje'][x]                    
-                    elif (math.isnan(dataFrame4[MONTHS[y]][DAYS[z]])):
-                        dataFrame4[MONTHS[y]][DAYS[z]] = 0.0
+                        dataFrame4[MONTHS[y]][DAYS[z]] = dataFrame3['Porcentaje'][x]
+                        
     print(dataFrame4)
     
 def createFig1(dataFrame): 
@@ -195,7 +191,7 @@ def createFig1(dataFrame):
 Función que realzia el paso a paso para tratar y generar los datos de cada compañia del archivo
 '''
 def workCompany():
-        x = 1
+    for x in range(len(nameCompanys)):
         tmp_datacompany = pd.Series(filterDataCompany(nameCompanys[x]))
         print('\n')
         print('------>Calculos empresa '+ str(nameCompanys[x]) + ' <-----')
@@ -234,6 +230,7 @@ if __name__ == '__main__':
     pd.set_option('expand_frame_repr', False)
     pd.set_option('display.html.table_schema', True)
     
+    loadDays()
     
     readFileIN("input.txt")
     serieAll = pd.Series(dataIN)
