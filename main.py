@@ -118,7 +118,7 @@ def createDataFrame2(dataCompany):
     #print(tmp_row_sum)
     #dataFrame.append(tmp_row_sum, ignore_index = False)
     print(dataFrame)
-    #print(dataCompany)
+    return dataFrame
 
 '''
 Función que  crea dataframe para mostra igual que la tabla 1 
@@ -177,52 +177,23 @@ def createDateFrame4(dataFrame3):
                         dataFrame4[MONTHS[y]][DAYS[z]] = dataFrame3['Porcentaje'][x]
                         
     print(dataFrame4)
+    return dataFrame4
 
 
-def createFig1(dataFrame): 
-    '''y = dataFrame['Porcentaje']
-    x = dataFrame.index
-    plt.title('Meses vs Porcentaje')
-    plt.plot(x, y)
-    plt.xticks(rotation='vertical')
-    plt.show()
-
-
-    x = (1,2,3,4,5,6,7,8,9,10,11,12)
-    threedee = plt.figure( figsize=(10, 10)).gca(projection='3d')
-    threedee.scatter(x , dataFrame['2015'], dataFrame['Porcentaje'], cmap='viridis')
-    threedee.set_xvalue= MONTHS
-    threedee.set_xlabel('Meses')
-    threedee.set_ylabel('Dias')
-    threedee.set_zlabel('Porcentaje')
-    plt.show()
-    '''
-    
-    result=[['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
-            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
-            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
-            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
-            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
-            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
-            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
-            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
-            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
-            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
-            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
-            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0']]
-    '''['15', '407', '37', '10', '102'],
-     ['100', '100', '100', '100', '100'],
-     ['113', '25', '19', '31', '112'],
-     ['43', '219', '35', '33', '14'],
-     ['132', '108', '256', '119', '14'],
-     ['22', '48', '352', '51', '438']]'''
-    
-    dataFrame2 = pd.DataFrame(0.0, columns = MONTHS , index = DAYS)
-    
-    result = np.array(result, dtype=np.int)
+def createFig(dataFrame): 
+    result = []
+    temp_dict = []
+    for y in range(len(MONTHS)):        
+        for z in range(len(DAYS)):
+            temp_dict.append(dataFrame[MONTHS[y]][DAYS[z]])
+        result.append(temp_dict)
+        temp_dict =[]
+ 
+    result = np.array(result, dtype=np.float)
     
     fig=plt.figure(figsize=(20, 10), dpi=60)
     ax1=fig.add_subplot(111, projection='3d')
+    
     
     xlabels = np.array(DAYS)
     xpos = np.arange(xlabels.shape[0])
@@ -231,7 +202,7 @@ def createFig1(dataFrame):
     
     xposM, yposM = np.meshgrid(xpos, ypos, copy=False)
     
-    zpos = result
+    zpos=result
     zpos = zpos.ravel()
     
     dx=0.5
@@ -256,20 +227,20 @@ Función que realzia el paso a paso para tratar y generar los datos de cada comp
 '''
 def workCompany():
     for a in range(len(nameCompanys)):
-        x = 0
-        tmp_datacompany = pd.Series(filterDataCompany(nameCompanys[x]))
+        #x = 0
+        tmp_datacompany = pd.Series(filterDataCompany(nameCompanys[a]))
         print('\n')
-        print('------>Calculos empresa '+ str(nameCompanys[x]) + ' <-----')
+        print('------>Calculos empresa '+ str(nameCompanys[a]) + ' <-----')
         print('\n')
         print('1) tabla 1: datos empresa primer año según frecuencia y rango de probabilidad ')
         print('\n')
         returnDataFrame1, data_frameAll  = createDataFrame1(tmp_datacompany)    
         returnDataFrame1 = possibilityAndPercent(returnDataFrame1)
-        createFig1(returnDataFrame1)
         print('\n')
         print('2) tabla 2: datos empresa primer año meses por días')
         print('\n')
-        createDataFrame2(returnDataFrame1)
+        DataFrame2 = createDataFrame2(returnDataFrame1)
+        createFig(DataFrame2)
         print('\n')
         print('3) tabla 3: datos empresa años cargados por frecuencia y rango de probabilidad día-mes')
         print('\n')
@@ -277,7 +248,8 @@ def workCompany():
         print('\n')
         print('4) tabla 4: datos empresa con el total de los años ingresado, meses por día ')
         print('\n')
-        createDateFrame4(dataFrame3)
+        DataFrame4 = createDateFrame4(dataFrame3)
+        createFig(DataFrame4)
 
 #generar pdf
 def printPDF():
