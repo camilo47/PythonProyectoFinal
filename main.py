@@ -177,21 +177,86 @@ def createDateFrame4(dataFrame3):
                         dataFrame4[MONTHS[y]][DAYS[z]] = dataFrame3['Porcentaje'][x]
                         
     print(dataFrame4)
-    
+
+
 def createFig1(dataFrame): 
-    y = dataFrame['2015']
+    '''y = dataFrame['Porcentaje']
     x = dataFrame.index
     plt.title('Meses vs Porcentaje')
     plt.plot(x, y)
     plt.xticks(rotation='vertical')
     plt.show()
+
+
+    x = (1,2,3,4,5,6,7,8,9,10,11,12)
+    threedee = plt.figure( figsize=(10, 10)).gca(projection='3d')
+    threedee.scatter(x , dataFrame['2015'], dataFrame['Porcentaje'], cmap='viridis')
+    threedee.set_xvalue= MONTHS
+    threedee.set_xlabel('Meses')
+    threedee.set_ylabel('Dias')
+    threedee.set_zlabel('Porcentaje')
+    plt.show()
+    '''
     
+    result=[['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
+            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
+            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
+            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
+            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
+            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
+            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
+            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
+            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
+            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
+            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0'],
+            ['2', '9', '3', '0', '19', '0','0','0','0','0','0','0','2', '9', '3', '0', '19', '0','0','0','0','0','0','0' '0','0','0','0','0','0','0']]
+    '''['15', '407', '37', '10', '102'],
+     ['100', '100', '100', '100', '100'],
+     ['113', '25', '19', '31', '112'],
+     ['43', '219', '35', '33', '14'],
+     ['132', '108', '256', '119', '14'],
+     ['22', '48', '352', '51', '438']]'''
+    
+    dataFrame2 = pd.DataFrame(0.0, columns = MONTHS , index = DAYS)
+    
+    result = np.array(result, dtype=np.int)
+    
+    fig=plt.figure(figsize=(20, 10), dpi=60)
+    ax1=fig.add_subplot(111, projection='3d')
+    
+    xlabels = np.array(DAYS)
+    xpos = np.arange(xlabels.shape[0])
+    ylabels = np.array(MONTHS) 
+    ypos = np.arange(ylabels.shape[0])
+    
+    xposM, yposM = np.meshgrid(xpos, ypos, copy=False)
+    
+    zpos = result
+    zpos = zpos.ravel()
+    
+    dx=0.5
+    dy=0.5
+    dz=zpos
+    
+    ax1.w_xaxis.set_ticks(xpos + dx/2.)
+    ax1.w_xaxis.set_ticklabels(xlabels)
+    
+    ax1.w_yaxis.set_ticks(ypos + dy/2.)
+    ax1.w_yaxis.set_ticklabels(ylabels)
+    
+    values = np.linspace(0.2, 1., xposM.ravel().shape[0])
+    colors = cm.rainbow(values)
+    ax1.bar3d(xposM.ravel(), yposM.ravel(), dz*0, dx, dy, dz, color=colors)
+    plt.show()
+        
+
 
 '''
 Función que realzia el paso a paso para tratar y generar los datos de cada compañia del archivo
 '''
 def workCompany():
-    for x in range(len(nameCompanys)):
+    for a in range(len(nameCompanys)):
+        x = 0
         tmp_datacompany = pd.Series(filterDataCompany(nameCompanys[x]))
         print('\n')
         print('------>Calculos empresa '+ str(nameCompanys[x]) + ' <-----')
