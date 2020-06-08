@@ -219,8 +219,122 @@ def createFig(dataFrame):
     colors = cm.rainbow(values)
     ax1.bar3d(xposM.ravel(), yposM.ravel(), dz*0, dx, dy, dz, color=colors)
     plt.show()
-        
 
+
+def graficar_predicciones(real, prediccion):
+    plt.plot(real[0:len(prediccion)],color='red', label='Días año anterior')
+    plt.plot(prediccion, color='blue', label='Dias predecidos')
+    plt.ylim(1.1 * np.min(prediccion)/2, 1.1 * np.max(prediccion))
+    plt.xlabel('Fecha')
+    plt.ylabel('dia')
+    plt.legend()
+    plt.show()
+        
+def predict(data):
+    np.random.seed(4)
+    
+    from sklearn.preprocessing import MinMaxScaler
+    from keras.models import Sequential
+    from keras.layers import Dense, LSTM
+    
+    data['fecha']  = pd.to_datetime(data['fecha'])
+    data.set_index('fecha')
+    dataset = data  #pd.read_csv('datanew.csv', index_col='fecha', parse_dates=['fecha'])
+    dataset.head()
+    
+    #
+    # Sets de entrenamiento y validación 
+    # La LSTM se entrenará con datos de 2018 hacia atrás. La validación se hará con datos de 2019 en adelante.
+    # En ambos casos sólo se usará el valor más alto de la acción para cada día
+    #
+    
+    set_entrenamiento = dataset[:'2018'].iloc[:,0:1]
+    
+    set_validacion = dataset['2019':].iloc[:,0:1]
+    
+    print(set_entrenamiento)
+    
+    
+    set_entrenamiento['dia'].plot(legend=True)
+    set_validacion['dia'].plot(legend=True)
+    plt.legend(['Datos antes 2018 ', 'Datos desde 2019'])
+    plt.show()
+    
+    
+    
+    # Normalización del set de entrenamiento
+    sc = MinMaxScaler(feature_range=(0,1))
+    set_entrenamiento_escalado = sc.fit_transform(set_entrenamiento)
+    
+    # La red LSTM tendrá como entrada "time_step" datos consecutivos, y como salida 1 dato (la predicción a
+    # partir de esos "time_step" datos). Se conformará de esta forma el set de entrenamiento
+    time_step = 4
+    X_train = []
+    Y_train = []
+    m = len(set_entrenamiento_escalado)
+    
+    for i in range(time_step,m):
+        # X: bloques de "time_step" datos: 0-time_step, 1-time_step+1, 2-time_step+2, etc
+        X_train.append(set_entrenamiento_escalado[i-time_step:i,0])
+    
+        # Y: el siguiente dato
+        Y_train.append(set_entrenamiento_escalado[i,0])
+    X_train, Y_train = np.array(X_train), np.array(Y_train)
+    
+    # Reshape X_train para que se ajuste al modelo en Keras
+    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+    
+    #
+    # Red LSTM
+    #
+    dim_entrada = (X_train.shape[1],1)
+    dim_salida = 1
+    na = 50
+    
+    modelo = Sequential()
+    modelo.add(LSTM(units=na, input_shape=dim_entrada))
+    modelo.add(Dense(units=dim_salida))
+    modelo.compile(optimizer='rmsprop', loss='mse')
+    modelo.fit(X_train,Y_train,epochs=20,batch_size=32)
+    
+    
+    #
+    # Validación (predicción del día )
+    #
+    x_test = set_validacion.values
+    x_test = sc.transform(x_test)
+    
+    X_test = []
+    
+    for i in range(time_step,len(x_test)):
+        X_test.append(x_test[i-time_step:i,0])
+        print()
+    X_test = np.array(X_test)
+    X_test = np.reshape(X_test, (X_test.shape[0],X_test.shape[1],1))
+    
+    prediccion = modelo.predict(X_test)
+    prediccion = sc.inverse_transform(prediccion)
+    
+    # Graficar resultados
+    graficar_predicciones(set_validacion.values,prediccion)
+    
+    print(prediccion)
+
+def transFormData(data):
+    tmp_columns = data.columns
+    data_trans = pd.DataFrame(columns = ['fecha', 'dia'])
+    tmp_index_general = 0
+    for i in range(len(data.columns)):
+        for x in range(len(data)):
+            tmp_mes_cal = x+1
+            tmp_fecha = ''
+            if(tmp_mes_cal < 10):
+                tmp_fecha = (tmp_columns[i] + '-0' + str(tmp_mes_cal) + '-01')
+            else:
+                tmp_fecha = (tmp_columns[i] + '-' + str(tmp_mes_cal) + '-01')
+            data_trans.loc[tmp_index_general] ={'fecha' : tmp_fecha , 'dia': data[tmp_columns[i]][MONTHS[x]]  }
+            tmp_index_general += 1
+    return data_trans
 
 '''
 Función que realzia el paso a paso para tratar y generar los datos de cada compañia del archivo
@@ -250,10 +364,10 @@ def workCompany():
         print('\n')
         DataFrame4 = createDateFrame4(dataFrame3)
         createFig(DataFrame4)
+        print(data_frameAll)
+        dataTransForma = transFormData(data_frameAll)
+        predict(dataTransForma)
 
-#generar pdf
-def printPDF():
-    pass
 
 '''
 Función principal del proyecto desde aquí se inicia todo el proceso de lectura de archivo y trabajo de la dta para cada compalia
@@ -274,5 +388,5 @@ if __name__ == '__main__':
     
     indentityCompanys()
     workCompany()
-    printPDF()
+    
     
