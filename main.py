@@ -8,6 +8,14 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
+from sklearn.preprocessing import MinMaxScaler
+from keras.models import Sequential
+from keras.layers import Dense, LSTM
+
+
+from datetime import date
+from dateutil.relativedelta import relativedelta
+
 
 MONTHS = [ 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 DAYS = []
@@ -230,16 +238,15 @@ def graficar_predicciones(real, prediccion):
     plt.legend()
     plt.show()
         
-def predict(data):
+def predict(data, empresa):
     np.random.seed(4)
     
-    from sklearn.preprocessing import MinMaxScaler
-    from keras.models import Sequential
-    from keras.layers import Dense, LSTM
+    
     
     data['fecha']  = pd.to_datetime(data['fecha'])
-    data.set_index('fecha')
-    dataset = data  #pd.read_csv('datanew.csv', index_col='fecha', parse_dates=['fecha'])
+    data.set_index('fecha', inplace=True, drop=True)
+    dataset = data  
+    dataset = dataset.astype(int)
     dataset.head()
     
     #
@@ -247,14 +254,14 @@ def predict(data):
     # La LSTM se entrenará con datos de 2018 hacia atrás. La validación se hará con datos de 2019 en adelante.
     # En ambos casos sólo se usará el valor más alto de la acción para cada día
     #
-    
+
     set_entrenamiento = dataset[:'2018'].iloc[:,0:1]
     
     set_validacion = dataset['2019':].iloc[:,0:1]
     
-    print(set_entrenamiento)
+    #print(set_entrenamiento)
     
-    
+
     set_entrenamiento['dia'].plot(legend=True)
     set_validacion['dia'].plot(legend=True)
     plt.legend(['Datos antes 2018 ', 'Datos desde 2019'])
@@ -290,6 +297,17 @@ def predict(data):
     dim_entrada = (X_train.shape[1],1)
     dim_salida = 1
     na = 50
+
+    from tensorflow.core.protobuf import rewriter_config_pb2
+    from tensorflow.keras.backend import set_session
+    tf.keras.backend.clear_session()
+
+    config_proto = tf.ConfigProto()
+    off = rewriter_config_pb2.RewriterConfig.OFF
+    config_proto.graph_options.rewrite_options.arithmetic_optimization = off
+    session = tf.Session(config=config_proto)
+    set_session(session)
+    tf.reset_default_graph()
     
     modelo = Sequential()
     modelo.add(LSTM(units=na, input_shape=dim_entrada))
@@ -308,7 +326,7 @@ def predict(data):
     
     for i in range(time_step,len(x_test)):
         X_test.append(x_test[i-time_step:i,0])
-        print()
+        
     X_test = np.array(X_test)
     X_test = np.reshape(X_test, (X_test.shape[0],X_test.shape[1],1))
     
@@ -318,7 +336,28 @@ def predict(data):
     # Graficar resultados
     graficar_predicciones(set_validacion.values,prediccion)
     
-    print(prediccion)
+    
+    temp = set_validacion[-1:]['dia'].index.values
+    temp = str(temp[0])
+    temp = temp[0:10]
+    temp = temp.split('-')
+    
+    
+    
+    fecha  = date(int(temp[0]), int(temp[1]), 1 )+relativedelta(months=+1)
+    
+    tempCount = 1
+    date_out = pd.DataFrame(columns = ['Año-Mes', 'dia'])
+    for i in range(len(prediccion)):
+        fecha  = date(int(temp[0]), int(temp[1]), 1 )+relativedelta(months=+tempCount)
+        fecha = str(fecha)
+        date_out.loc[tempCount] ={'Año-Mes' : fecha[0:7] , 'dia': int(prediccion[i])  }
+        tempCount += 1
+    print('-----------------------------------------------------------')
+    print('Dias Calculados según los datos ingresados para la empresa ' + empresa)
+    print('-----------------------------------------------------------')
+    print(date_out)
+    print('###########################################################')
 
 def transFormData(data):
     tmp_columns = data.columns
@@ -364,9 +403,9 @@ def workCompany():
         print('\n')
         DataFrame4 = createDateFrame4(dataFrame3)
         createFig(DataFrame4)
-        print(data_frameAll)
+        #print(data_frameAll)
         dataTransForma = transFormData(data_frameAll)
-        predict(dataTransForma)
+        predict(dataTransForma,nameCompanys[a])
 
 
 '''
